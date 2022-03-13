@@ -1,0 +1,109 @@
+; ИЗУЧЕНИЕ РАСШИРЕННОГО ЛИСТИНГА
+				;< 1. Здесь можно описывать макросы.>
+				macrodef MACRO par1, par2, par3
+					LOCAL M3
+					mov par2, par1 ; обычная команда
+					;с обычным комментарием
+					; Скрытый комментарий
+					M3:
+						push par3 ;; обычные
+						pop par2 ;; команды
+				endm
+ 00000000			.data
+					;<2. Здесь можно описывать статические переменные. >
+ 00000000 11223344			Num1 dd 11223344h, 55667788h
+	     55667788
+ 00000008 41 42 43 44 45		Str1 db "ABCDEF", 0
+	     46 00
+ 00000000			.code
+ 00000000				start:
+					;<3. Здесь можно вводить команды программиста. >
+ 00000000  A1 00000000 R		Mov EAX, Num1 ; 11223344
+ 00000005  8A 15 0000001A R		Mov dl, [Str2 + 3] ; J
+					macrodef EAX, EDX, Num1
+			     1		LOCAL M3
+ 0000000B  8B D0	     1		mov EDX, EAX ; обычная команда
+			     1		;с обычным комментарием
+			     1		
+ 0000000D		     1		??0019:
+ 0000000D  FF 35 00000000 R  1			push Num1 
+ 00000013  5A		     1			pop EDX 
+ 0000000F			.data
+
+				;<4. Здесь можно описывать статические переменные. >
+ 0000000F 99AABBCC		Num2 dd 99aabbcch, 0ddeeff00h
+	     DDEEFF00
+ 00000017 47 48 49 4A 4B	Str2 db "GHIJKLM",0
+	     4C 4D 00
+ 00000014			.code
+				;<5. Здесь можно вводить команды программиста. >
+ 00000014  8B 1D 00000013 R	Mov EBX,[Num2 + 4] ; DDEEFF00
+ 0000001A  8A 15 0000000C R	Mov dl, [Str1 +4] ; E
+				macrodef Num2, ESI, EAX
+			     1		LOCAL M3
+ 00000020  8B 35 0000000F R  1		mov ESI, Num2 ; обычная команда
+			     1		;с обычным комментарием
+			     1		
+ 00000026		     1		??001A:
+ 00000026  50		     1			push EAX 
+ 00000027  5E		     1			pop ESI 
+				; 6. примеры реальных вызовов макросов и процедур
+				print "Hello, world!" ; макрос сообщения
+			     1	        IFNDEF __UNICODE__
+			     3	      LOCAL nustr
+			     3	      LOCAL quot
+ = "			     3	        ??001C SUBSTR <"Hello, world!">,1,1
+			     3	      IFIDN ??001C,<">                
+			     3	
+			     3	        IFNDEF __UNICODE__
+ 0000001F		     3	          .data
+ 0000001F 48 65 6C 6C 6F     3	            ??001B db "Hello, world!",0          
+	     2C 20 77 6F
+	     72 6C 64 21
+	     00
+ 00000028		     3	          .code
+			     3	          EXITM <OFFSET ??001B>      
+			     2	      LOCAL prefix1,wrd,nu,varname
+			     2	
+ = O			     2	      ??001D SUBSTR <OFFSET ??001B>,1,1
+			     2	
+			     2	   
+			     2	
+			     2	        IFIDN ??001D,<&>                   
+			     2	          ??001F SUBSTR <OFFSET ??001B>,2
+			     2	          ??001E CATSTR <ADDR >,??001F
+			     2	          EXITM <??001E>
+			     2	        ENDIF
+			     2	
+			     2	        IFIDN ??001D,<*>                   
+			     2	          ??001F SUBSTR <OFFSET ??001B>,2
+			     2	          .data?
+			     2	            ??0020 dd ?
+			     2	          .code
+			     2	          push ebx
+			     2	          mov ebx, ??001F
+			     2	          mov ebx, [ebx]                    
+			     2	          mov ??0020, ebx
+			     2	          pop ebx
+			     2	          EXITM <??0020>
+			     2	        ENDIF
+			     2	
+			     2	      EXITM <OFFSET ??001B>                        
+ 00000028  68 0000001F R   *	    push   dword  ptr OFFSET FLAT:??001B
+ 0000002D  E8 00000000 E   *	    call   StdOut
+			     1	          invoke StdOut,expand_prefix(reparg("Hello, world!"))
+			     1	        ELSE
+			     1	          invoke StdOutW,expand_prefix(reparg("Hello, world!"))
+			     1	        ENDIF
+			     1	      IFNB <>
+			     1	        IFNDEF __UNICODE__
+			     1	          invoke StdOut,chr$()
+			     1	        ELSE
+			     1	          invoke StdOutW,chr$()
+			     1	        ENDIF
+			     1	      ENDIF
+				;--------------------------------------
+				invoke ExitProcess,0 ; выход в Windows
+ 00000032  6A 00	   *	    push   +000000000h
+ 00000034  E8 00000000 E   *	    call   ExitProcess
+				end start

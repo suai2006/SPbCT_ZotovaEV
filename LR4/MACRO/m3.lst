@@ -1,0 +1,18 @@
+.486
+.MODEL flat, stdcall
+  ; точка1 - место макроопределений
+.data
+	massiv label word
+		dw 1
+		dw 4
+		dw 9
+		dw 16
+		dw 25
+.code
+
+	mov eax, 1
+	mov eax, 3
+	mov eax, 5
+	mov eax, 7
+	mov eax, 9
+end
